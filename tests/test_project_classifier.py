@@ -1,6 +1,7 @@
 from src.project_classifier import tokenize
 from src.project_classifier import CategoryClassifier
 from src.project_classifier import ProjectCluster
+from src.utils import *
 import logging
 
 logger = logging.getLogger(__name__)
@@ -39,3 +40,8 @@ def test_group_projects():
     # group_projects returns a numpy.ndarray, therefore casting to list
     res = (pc.group_projects(workspaces)).tolist()
     assert res == expectation
+
+
+def test_predict_pdf():
+    '''Predicts env and project group from a pandas dataframe.'''
+    pdf = read_as_pdf()

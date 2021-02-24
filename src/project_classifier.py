@@ -4,18 +4,20 @@ import numpy as np
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+# TODO: Add function to generate / manage data
 workspaces = ['playground', 'db-testing-01', 'asdpro', 'asddev', 'jordidev', 'qatest-env']
-envs = ['pre', 'pro', 'prod', 'qa', 'test', 'tst', 'dev']
+envs = ['pre', 'prod', 'qa', 'uat', 'test', 'tst', 'dev']
 
 
-def remove_matches(word: str) -> str:
+# TODO: Find a more efficient way!
+def replace_matches(word: str, new_token: str = '') -> str:
     for env in envs:
         if env in word:
-            return word.replace(env, '')
+            return word.replace(env, new_token)
     return word
 
 
-def tokenize(word: list, n: int) -> list:
+def tokenize(word: list, n: int = 3) -> list:
     from nltk import ngrams
     # turn workspace into n-grams
     # cast to list... maybe there's a better way
@@ -31,11 +33,13 @@ class CategoryClassifier:
         self.categories = categories
 
     # check if any n-gram matches the categories
-    def classify_category(self, tokens: list) -> None:
+    def classify_category(self, input: list) -> None:
         # improve efficiency when matching
+        tokens = tokenize(input, n=3)
         for token in tokens:
             if token in self.categories:
                 return token
+
         return None
 
 
@@ -46,19 +50,23 @@ class ProjectCluster:
 
     def build_tdidf_matrix(self, words: list) -> np.matrix:
         from sklearn.feature_extraction.text import TfidfVectorizer
-        stop_words = ['-', '_']
+
         # remove env substrings from corpus words
-        corpus = [remove_matches(word) for word in words]
+        corpus = [replace_matches(word, '-') for word in words]
+
         # what if a word is shorter than max n-gram size?
-        vectorizer = TfidfVectorizer(input=corpus, ngram_range=(1, 5),
-                                     lowercase=True, stop_words=set(stop_words))
+        stop_words = ['-', '_']
+        vectorizer = TfidfVectorizer(input=corpus, ngram_range=(1, 2),
+                                     lowercase=True, stop_words=set(stop_words),
+                                     token_pattern=r'(?u)\b[A-Za-z]+\b')
         X = vectorizer.fit_transform(corpus)
         tfidf_matrix = X.todense()
         return tfidf_matrix
 
     # group similar projects together
-    def group_projects(self, workspaces: str) -> list:
+    def group_projects(self, workspaces: list) -> list:
         from sklearn.cluster import AgglomerativeClustering
+
         # use whole corpus to create TF-IDF matrix
         tfidf_matrix = self.build_tdidf_matrix(workspaces)
         np.random.seed(0)  # seed to preserve clustering label order
@@ -67,10 +75,32 @@ class ProjectCluster:
         return groups
 
 
-def __main__():
-    categories, num_groups = envs, 3
-    cc = CategoryClassifier(categories)
-    pc = ProjectCluster(num_groups)
-    env_preds = [cc.classify_category(wk) for wk in workspaces]
-    project_preds = pc.group_projects
-    return [(env, project) for env, project in zip(env_preds, project_preds)]
+class ProjectClassifier():
+    import utils
+    workspaces = ['playground', 'db-testing-01', 'asdpro', 'asddev', 'jordidev', 'qatest-env']
+    envs = ['pre', 'pro', 'prod', 'qa', 'uat', 'test', 'tst', 'dev']
+
+    cc = CategoryClassifier(categories=envs)
+    pc = ProjectCluster()
+    pdf = utils.read_as_pdf()
+    pdf['pred_env'] = cc.classify_category(pdf['project_name'])
+    pdf['pred_group'] = pc.group_projects(pdf['project_name'])
+
+
+# TODO: Improve project structure
+# https://towardsdatascience.com/building-package-for-machine-learning-project-in-python-3fc16f541693
+def main():
+    import utils
+
+    envs = ['pre', 'pro', 'prod', 'qa', 'uat', 'test', 'tst', 'dev']
+    cc = CategoryClassifier(categories=envs)
+    pc = ProjectCluster()
+    pdf = utils.read_as_pdf()
+    pdf['pred_env'] = [cc.classify_category(wk) for wk in pdf['project_name']]
+    pdf['pred_group'] = pc.group_projects(pdf['project_name'])
+    print(pdf)
+    return pdf
+
+
+if __name__ == "__main__":
+    main()
