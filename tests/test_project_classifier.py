@@ -1,7 +1,7 @@
-from src.project_classifier import tokenize
-from src.project_classifier import CategoryClassifier
-from src.project_classifier import ProjectCluster
-from src.utils import *
+from projectclassifier.project_classifier import tokenize
+from projectclassifier.project_classifier import CategoryClassifier
+from projectclassifier.project_classifier import ProjectCluster
+from projectclassifier.utils import *
 import logging
 
 logger = logging.getLogger(__name__)
