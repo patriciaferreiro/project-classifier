@@ -61,7 +61,7 @@ class ProjectClassifier():
         # get data directly or read from path
         if path:
             pdf = utils.read_file_as_pdf(path)
-        elif not pdf:
+        elif pdf is None:
             ValueError('You must input either a pandas DF or a path to data file.')
         # add prediction cols to pdf
         pdf['pred_env'] = [cc.classify_category(wk) for wk in pdf[input_col]]
