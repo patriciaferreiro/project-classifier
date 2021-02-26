@@ -1,7 +1,7 @@
-from projectclassifier.project_classifier import tokenize
-from projectclassifier.project_classifier import CategoryClassifier
-from projectclassifier.project_classifier import ProjectCluster
-from projectclassifier.utils import *
+from projectclf.project_classifier import ProjectClassifier
+from projectclf.project_classifier import CategoryClassifier
+from projectclf.project_classifier import ProjectCluster
+from projectclf.utils import tokenize
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,4 +44,16 @@ def test_group_projects():
 
 def test_predict_pdf():
     '''Predicts env and project group from a pandas dataframe.'''
-    pdf = read_as_pdf()
+    import pandas as pd
+
+    envs = ['pre', 'prod', 'qa', 'uat', 'test', 'tst', 'dev', 'dr']
+    irrelevant_words = ['sourcing', 'analysis', 'processing', 'debug', 'analytics']
+    # pass specific irrelevant words before envs, so they're matched first
+    path = '../data/sample.csv'
+    input_col = 'project_name'
+    clf = ProjectClassifier()
+    pdf = clf.classify(input_col=input_col, irrelevant_words=irrelevant_words + envs,
+                       envs=envs, path=path)
+    pdf = pdf.sort_values(by=['pred_group'])
+    expectation = pd.read_csv('test_predict_pdf_out.txt')
+    assert pdf == expectation

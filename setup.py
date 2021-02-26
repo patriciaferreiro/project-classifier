@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
 setuptools.setup(
-    name="projectclassifier",
+    name="projectclf",
     version="0.0.1",
     author="Patricia Ferreiro",
     author_email="patricia.ferreiro@databricks.com",

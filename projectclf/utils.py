@@ -4,14 +4,13 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-ENVS = ['pre', 'pro', 'prod', 'qa', 'uat', 'test', 'tst', 'dev']
-
 
 # TODO: Find a more efficient way!
-def replace_matches(word: str, new_token: str = '') -> str:
-    for env in ENVS:
-        if env in word:
-            return word.replace(env, new_token)
+def replace_matches(word: str, matches: list, new_token: str = '') -> str:
+    for m in matches:
+        if m in word:
+            # may be more than 1 match
+            word = word.replace(m, new_token)
     return word
 
 
