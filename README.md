@@ -17,6 +17,6 @@ Takes a group of project names and:
 
 ## Implementation details
 - Classification is done by attempting to match the project name n-grams to a predetermined category list.
-If no match is found, the project is not classified.'
+If no match is found, the project is not classified.
 
 - Clustering by project is done by applying an Agglomerative clustering algorithm to the project name n-grams TD-IDF matrix.
